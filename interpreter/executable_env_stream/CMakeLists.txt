@@ -1,0 +1,12 @@
+cmake_minimum_required(VERSION 3.27)
+project(interpreter)
+
+set(CMAKE_CXX_STANDARD 20)
+
+add_library(exe_env_ostream_loader INTERFACE)
+target_include_directories(exe_env_ostream_loader INTERFACE include)
+target_link_libraries(exe_env_ostream_loader INTERFACE loader)
+
+add_library(executable_env_ostream STATIC src/executable_environment_ostream.cpp)
+target_include_directories(executable_env_ostream PUBLIC include)
+target_link_libraries(executable_env_ostream values)

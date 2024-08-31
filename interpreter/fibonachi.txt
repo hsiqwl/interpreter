@@ -1,0 +1,14 @@
+func fib(unsigned a)(
+	unsigned b;
+	testonce(a < 3)(
+		b <- 1;
+	)
+	testonce(a > 2)(
+		b <- (call fib(a-1)) + (call fib(a-2));
+	)
+	a <- b;
+)
+
+func start()(
+	print(call fib(25));
+)

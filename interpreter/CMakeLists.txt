@@ -1,0 +1,36 @@
+cmake_minimum_required(VERSION 3.27)
+project(interpreter)
+
+set(CMAKE_CXX_STANDARD 20)
+
+add_compile_options(-g)
+
+add_subdirectory(printable)
+add_subdirectory(cell)
+add_subdirectory(symbol)
+add_subdirectory(symbol_table)
+add_subdirectory(value)
+add_subdirectory(errors)
+add_subdirectory(nodes)
+add_subdirectory(ast)
+add_subdirectory(ast_visitor)
+add_subdirectory(parsing_driver)
+add_subdirectory(activation_record)
+add_subdirectory(call_stack)
+add_subdirectory(execution_context)
+add_subdirectory(executable_env_stream)
+
+add_subdirectory(map)
+add_subdirectory(robot)
+add_subdirectory(loader)
+add_subdirectory(singleton_holder)
+add_subdirectory(map_commands)
+add_subdirectory(command)
+add_subdirectory(robot_commands)
+add_subdirectory(GUI/draw_commands)
+add_subdirectory(remote_environment_handler)
+
+add_subdirectory(interpreter)
+
+add_executable(main main.cpp)
+target_link_libraries(main interpreter_lib)

@@ -1,0 +1,254 @@
+unsigned X <- 2;
+unsigned Y <- 2;
+unsigned direction <- 0;
+
+unsigned N <- 5;
+unsigned M <- 5;
+
+signed FIN_X <- 10;
+signed FIN_Y <- -3;
+
+
+matrix<Cell> map(N-1,M-1);
+matrix<unsigned> visited(N-1,M-1);
+
+func Resize_cell(matrix<Cell> m, unsigned old_x, unsigned old_y, unsigned new_x, unsigned new_y) (
+    matrix<Cell> new_m(new_x-1, new_y-1);
+    unsigned i <- 0;
+    testrep ((i < new_x) * (i < old_x))
+    (
+        unsigned j <- 0;
+        testrep ((j < new_y) * (j < old_y)) 
+        (
+            new_m(i,j) <- m(i,j);
+        	j <- j+1;
+        )
+    	i <- i+1;
+    )
+    new_m;
+)
+
+func Resize_signed(matrix<signed> m, unsigned old_x, unsigned old_y, unsigned new_x, unsigned new_y) (
+    matrix<signed> new_m(new_x-1, new_y-1);
+    unsigned i <- 0;
+    testrep ((i < new_x) * (i < old_x))
+    (
+        unsigned j <- 0;
+        testrep ((j < new_y) * (j < old_y)) 
+        (
+            new_m(i,j) <- m(i,j);
+        	j <- j+1;
+        )
+    	i <- i+1;
+    )
+    new_m;
+)
+
+func Shift_cell(matrix<Cell> m, unsigned x, unsigned y, signed to_right, signed to_bottom) (
+    matrix<Cell> new_m(x-1, y-1);
+    unsigned i <- 0;
+    testrep (i < x)
+    (
+        testonce ((((to_right+i) < 0) = 0)* ((to_right+i) < x)) (
+            unsigned j <- 0;
+            testrep (j < y) (
+                testonce ((((to_bottom+j) < 0) = 0) * ((to_bottom+j) < y))
+                (
+                    new_m(to_right+i, to_bottom+j) <- m(i,j);
+                )
+                	j <- j+1;
+            )
+        )
+    	i <- i+1;
+    )
+    new_m;
+)
+
+func Shift_signed(matrix<signed> m, unsigned x, unsigned y, signed to_right, signed to_bottom) (
+    matrix<signed> new_m(x-1, y-1);
+    unsigned i <- 0;
+    testrep (i < x)
+    (
+        testonce ((((to_right+i) < 0) = 0)* ((to_right+i) < x)) (
+            unsigned j <- 0;
+            testrep (j < y) (
+                testonce ((((to_bottom+j) < 0) = 0) * ((to_bottom+j) < y))
+                (
+                    new_m(to_right+i, to_bottom+j) <- m(i,j);
+                )
+                j <- j+1;
+            )
+        )
+    	i <- i+1;
+    )
+    new_m;
+)
+
+func resize(unsigned new_x, unsigned new_y) (
+    map <- call Resize_cell(map, N, M, new_x, new_y);
+    visited <- call Resize_signed(visited, N, M, new_x, new_y);
+    N <- new_x;
+    M <- new_y;
+)
+
+func shift(signed to_right, signed to_bottom) (
+    map <- call Shift_cell(map, N, M, to_right, to_bottom);
+    visited <- call Shift_signed(visited, N, M, to_right, to_bottom);
+    X <- X+to_right;
+    FIN_X <- FIN_X+to_right;
+    Y <- Y+to_bottom;
+    FIN_Y <- FIN_Y+to_bottom;
+)
+
+func extend() (
+    testonce(X = 0) (
+        unsigned n <- N+3;
+        unsigned m <- M;
+        call resize(n,m);
+        n <- 3;
+        m <- 0;
+        call shift(n,m);
+    )
+    testonce(Y = 0) (
+        unsigned n <- N;
+        unsigned m <- M+3;
+        call resize(n,m);
+        n <- 0;
+        m <- 3;
+        call shift(n,m);   
+    )
+    testonce(X = (N-1)) (
+        unsigned n <- N+3;
+        unsigned m <- M;
+        call resize(n,m);
+    )
+    testonce(Y = (M-1)) (
+        unsigned n <- N;
+        unsigned m <- M+3;
+        call resize(n,m);
+    )
+)
+
+func scan() (
+    call extend();
+    matrix<Cell> data <- xray;
+    signed i <- 0;
+    testrep (i < 5) (
+        signed j <- 0;
+        testrep (j < 5) (
+            testonce ((((i-2+X)<0)=0) * (((i-2+X)<N)) * (((j-2+Y)<0)=0) * (((j-2+Y)<M))) (
+                map(i-2+X, j-2+Y) <- data(i,j);
+            )
+        j <- j+1;
+        )
+    i <- i+1;
+    )
+    map <- #map;
+)
+
+func build_wall(unsigned direction)(
+	Cell mask;
+	testonce(direction = 0) (
+	   	mask <- (top);
+	)
+	testonce(direction = 1) (
+	    mask <- (right);
+	)
+	testonce(direction = 2) (
+	    mask <- (down);
+	)
+	testonce(direction = 3) (
+	    mask <- (left);
+	)
+	mask;
+)
+
+func is_wall(Cell current, unsigned direction) (
+    unsigned res <- 0;
+    Cell mask <- call build_wall(direction);
+    res <- mask % current; 
+)
+
+func next_is_visited(unsigned direction) (
+    unsigned res <- 0;
+    testonce(direction = 0) (
+        res <- visited(X,Y-1);
+    )
+    testonce(direction = 1) (
+        res <- visited(X+1,Y);
+    )
+    testonce(direction = 2) (
+        res <- visited(X,Y+1);
+    )
+    testonce(direction = 3) (
+        res <- visited(X-1,Y);
+    )
+    res;
+)
+
+func move_direction(unsigned direction) (
+    testonce(direction = 0) (
+        Y <- Y-1;
+        move_top;
+    )
+    testonce(direction = 1) (
+        X <- X+1;
+        move_right;
+    )
+    testonce(direction = 2) (
+        Y <- Y+1;
+        move_bottom;
+    )
+    testonce(direction = 3) (
+        X <- X-1;
+        move_left;
+    )
+)
+
+func at_finish()(
+	unsigned a <- 0;
+	testonce((X = FIN_X) * (Y = FIN_Y))(
+		a <- 1;
+	)
+	a;
+)
+
+func dfs() (
+	call scan();
+	unsigned backward_direction <- direction;
+	unsigned end_flag <- 0;
+	testonce((visited(X,Y) = 0))(
+		visited(X,Y) <- 1;
+		end_flag <- call at_finish();
+		testonce(end_flag = 0)(
+			Cell current <- map(X,Y);
+			direction <- 0;
+			testrep(direction < 4)(
+				unsigned direction_before_recursive <- direction;
+				unsigned a <- call next_is_visited(direction);
+				unsigned b <- call is_wall(current, direction);
+				testonce((a = 0) * (b = 0))(
+					call move_direction(direction);
+					end_flag <- call dfs();
+				)
+				testonce(end_flag = 0)(
+					direction <- direction_before_recursive + 1;
+				)
+				testonce(end_flag = 1)(
+					direction <- 4;
+				)
+			)
+			direction <- (backward_direction + 2) % 4;
+			testonce((call is_wall(current, direction) = 0) * (end_flag = 0))(
+				call move_direction(direction);
+				map(X,Y) <- map(X,Y) / call build_wall(backward_direction);
+			)
+		)
+	)
+	end_flag;
+)
+
+func start() (
+    unsigned res <- call dfs();
+    print(res);
+)

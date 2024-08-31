@@ -1,0 +1,31 @@
+func bubble_sort(matrix<signed> array, unsigned n)(
+	unsigned i <- 0;
+	testrep(i < n - 1)(
+		unsigned j <- 0;
+		testrep(j < n - i - 1)(
+				testonce(array(j,0) > array(j+1,0))(
+				signed tmp <- array(j,0);
+				array(j,0) <- array(j+1,0);
+				array(j+1,0) <- tmp;
+			)
+			j <- j + 1;
+		)
+		i <- i + 1;
+	)
+	array;
+)
+
+func start()(
+	unsigned n <- 5;
+	matrix<signed> array(n-1, 0);
+	signed b <- -14;
+	unsigned i <- 0;
+	testrep(i < n)(
+		array(i,0) <- b;
+		b <- (b + 32185u) % 981;
+		i <- i + 1;
+	)
+	print(array);
+	array <- call bubble_sort(array, n);
+	print(array);
+)
